@@ -23,6 +23,16 @@ class StudentListTest(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+    def verify_list(self, expected, result):
+        self.assertEqual(len(result), len(expected))
+
+        for i in range(len(expected)):
+            student_exp = expected[i]
+            student_res = result[i]
+
+            self.assertEqual(student_exp.name, student_res['name'])
+            self.assertEqual(student_exp.year, student_res['year'])
+
     def setUp_list1(self):
         num_students = 10
         self.student_list = create_random_students(num_students)
@@ -34,13 +44,26 @@ class StudentListTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-        students_expected_list = self.student_list
-        students_result_list = response.data
-        self.assertEqual(len(students_result_list), len(students_expected_list))
+        self.verify_list(self.student_list, response.data)
 
-        for i in range(len(students_expected_list)):
-            student_exp = students_expected_list[i]
-            student_res = students_result_list[i]
+    def setUp_list2(self):
+        num_students_2016 = 10
+        self.student_list_2016 = create_random_students(num_students_2016, 2016)
 
-            self.assertEqual(student_exp.name, student_res['name'])
-            self.assertEqual(student_exp.year, student_res['year'])
+        num_students_2017 = 15
+        self.student_list_2017 = create_random_students(num_students_2017, 2017)
+
+    def test_student_list_specific_year(self):
+        self.setUp_list2()
+
+        url = reverse('api_student_year_list', kwargs={'year': 2016})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.verify_list(self.student_list_2016, response.data)
+
+        url = reverse('api_student_year_list', kwargs={'year': 2017})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.verify_list(self.student_list_2017, response.data)
