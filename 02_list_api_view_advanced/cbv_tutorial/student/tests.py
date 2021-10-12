@@ -67,3 +67,30 @@ class StudentListTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.verify_list(self.student_list_2017, response.data)
+
+    def setUp_list3(self):
+        num_students_2016 = 10
+        self.student_list_2016 = create_random_students(num_students_2016, 2016)
+
+        num_students_2017 = 15
+        self.student_list_2017 = create_random_students(num_students_2017, 2017)
+
+        num_students_2018 = 20
+        self.student_list_2018 = create_random_students(num_students_2018, 2018)
+
+    def test_student_list_range_year(self):
+        self.setUp_list3()
+
+        post_data = {
+            'start_year': '2017',
+            'end_year': '2018'
+        }
+        url = reverse('api_student_year_range_list')
+        response = self.client.post(path=url, data=post_data)
+        self.assertEqual(response.status_code, 200)
+
+        list_2017_and_2018 = []
+        list_2017_and_2018.extend(self.student_list_2017)
+        list_2017_and_2018.extend(self.student_list_2018)
+
+        self.verify_list(list_2017_and_2018, response.data)
